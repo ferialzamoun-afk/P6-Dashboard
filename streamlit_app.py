@@ -1,5 +1,5 @@
 """
-🍷 Dashboard BottleNeck - Application Streamlit Interactive
+🏪 Dashboard Ventes & Stocks - Application Streamlit Interactive
 Conforme au brief : KPIs, Top 10 CA, Analyse stocks, Filtres & Bonus (Pareto, Corrélation)
 """
 
@@ -9,6 +9,12 @@ import numpy as np
 import plotly.express as px
 import plotly.graph_objects as go
 from pathlib import Path
+from datetime import datetime
+from io import BytesIO
+from reportlab.lib.pagesizes import A4
+from reportlab.lib.units import cm
+from reportlab.lib.utils import ImageReader
+from reportlab.pdfgen import canvas
 
 # ============================================
 # CONFIGURATION DE LA PAGE
@@ -18,6 +24,36 @@ st.set_page_config(
     page_icon="🏪",
     layout="wide",
     initial_sidebar_state="expanded"
+)
+
+st.markdown(
+    """
+    <style>
+    @import url('https://fonts.googleapis.com/css2?family=Fraunces:wght@600;700&family=Manrope:wght@400;500;600&display=swap');
+
+    html, body, [class*="css"] {
+        font-family: 'Manrope', sans-serif;
+    }
+    h1, h2, h3 {
+        font-family: 'Fraunces', serif;
+        letter-spacing: 0.2px;
+    }
+    [data-testid="stAppViewContainer"] {
+        background: linear-gradient(180deg, #fff8f2 0%, #ffffff 45%, #f6f7fb 100%);
+    }
+    [data-testid="stSidebar"] {
+        background: #f7f3ee;
+        border-right: 1px solid #efe6db;
+    }
+    [data-testid="stMetric"] {
+        background: #ffffff;
+        border: 1px solid #efe6db;
+        border-radius: 10px;
+        padding: 10px 12px;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True
 )
 
 # ============================================
@@ -60,6 +96,70 @@ def load_data():
     except Exception as e:
         st.error(f"❌ Erreur de chargement: {str(e)}")
         return None
+
+
+def get_analysis_images():
+    images_dir = Path.cwd() / 'images'
+    image_items = [
+        ("Palmares CA", images_dir / 'palmares_ca.png'),
+        ("Pareto CA", images_dir / 'pareto_ca.png'),
+        ("Palmares Quantite", images_dir / 'palmares_quantite.png'),
+        ("Pareto Quantite", images_dir / 'pareto_quantite.png'),
+        ("Rotation Stock", images_dir / 'stock_rotation_top20.png'),
+        ("Marge par Type", images_dir / 'marge_par_type.png'),
+        ("Matrice de Correlation", images_dir / 'correlation_matrix.png'),
+    ]
+    return [(title, path) for title, path in image_items if path.exists()]
+
+
+def build_pdf_report(kpis, image_items):
+    buffer = BytesIO()
+    pdf = canvas.Canvas(buffer, pagesize=A4)
+    width, height = A4
+    margin = 2 * cm
+
+    y = height - margin
+    pdf.setFont("Helvetica-Bold", 18)
+    pdf.drawString(margin, y, "Dashboard Ventes & Stocks")
+    y -= 0.8 * cm
+    pdf.setFont("Helvetica", 10)
+    pdf.drawString(margin, y, f"Synthese automatique - {datetime.now():%Y-%m-%d %H:%M}")
+
+    y -= 1.0 * cm
+    pdf.setFont("Helvetica-Bold", 12)
+    pdf.drawString(margin, y, "Indicateurs cles")
+    y -= 0.6 * cm
+    pdf.setFont("Helvetica", 10)
+    for label, value in kpis:
+        pdf.drawString(margin, y, f"- {label}: {value}")
+        y -= 0.45 * cm
+
+    pdf.showPage()
+
+    for title, path in image_items:
+        pdf.setFont("Helvetica-Bold", 14)
+        pdf.drawString(margin, height - margin, title)
+        if path.exists():
+            image = ImageReader(str(path))
+            available_w = width - 2 * margin
+            available_h = height - 3 * margin
+            pdf.drawImage(
+                image,
+                margin,
+                margin,
+                width=available_w,
+                height=available_h,
+                preserveAspectRatio=True,
+                anchor='c'
+            )
+        else:
+            pdf.setFont("Helvetica", 10)
+            pdf.drawString(margin, height - 2 * margin, "Image manquante")
+        pdf.showPage()
+
+    pdf.save()
+    buffer.seek(0)
+    return buffer
 
 # ============================================
 # INTERFACE PRINCIPALE
@@ -316,6 +416,46 @@ if st.checkbox("📊 Afficher les données filtrées"):
     )
 
 # ============================================
+# SECTION BONUS 4 - ANALYSES VISUELLES (PNG)
+# ============================================
+
+st.header("🖼️ Analyses Visuelles (PNG)")
+st.caption("Synthese des graphiques generes dans le notebook")
+
+analysis_images = get_analysis_images()
+if analysis_images:
+    for i in range(0, len(analysis_images), 2):
+        cols = st.columns(2)
+        for col, item in zip(cols, analysis_images[i:i + 2]):
+            title, path = item
+            with col:
+                st.subheader(title)
+                st.image(str(path), use_container_width=True)
+else:
+    st.info("Aucune image PNG detectee dans le dossier images/")
+
+# ============================================
+# SECTION BONUS 5 - EXPORT PDF
+# ============================================
+
+st.header("📄 Export PDF (Bonus)")
+
+pdf_kpis = [
+    ("CA Total Web", f"{ca_total:,.0f} EUR"),
+    ("Nombre de Produits", f"{nb_produits:,}"),
+    ("Marge Moyenne", f"{marge_moyenne:.1f}%"),
+    ("Produits en Rupture", f"{rupture:,}"),
+]
+
+pdf_buffer = build_pdf_report(pdf_kpis, analysis_images)
+st.download_button(
+    label="📥 Telecharger le rapport PDF",
+    data=pdf_buffer,
+    file_name="dashboard_ventes_stocks.pdf",
+    mime="application/pdf"
+)
+
+# ============================================
 # FOOTER
 # ============================================
 
@@ -323,7 +463,7 @@ st.divider()
 st.markdown(
     """
     <div style='text-align: center; color: gray; font-size: 12px;'>
-    🍷 Dashboard BottleNeck | Conforme au brief projet | 
+    🏪 Dashboard Ventes & Stocks | Conforme au brief projet | 
     <a href='https://github.com' target='_blank'>GitHub</a>
     </div>
     """,
