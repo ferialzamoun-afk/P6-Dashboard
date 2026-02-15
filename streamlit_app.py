@@ -166,7 +166,7 @@ def build_pdf_report(kpis, image_items):
 # ============================================
 
 st.title("📊 Dashboard Ventes & Stocks")
-st.markdown("*Analyse des ventes et des stocks en temps réel*")
+st.markdown("*Analyse des ventes et des stocks en temps reel*")
 
 # Charger les données
 df = load_data()
@@ -177,6 +177,50 @@ if df is None:
 # ============================================
 # SIDEBAR - FILTRES
 # ============================================
+
+st.sidebar.header("🧭 Navigation")
+page = st.sidebar.selectbox(
+    "Aller a",
+    ["Dashboard", "Methodologie"],
+    index=0
+)
+
+if page == "Methodologie":
+    st.header("🧪 Methodologie")
+    st.markdown(
+        """
+        **Objectif**
+        - Identifier les produits qui tirent le chiffre d'affaires.
+        - Detecter les ruptures, les surstocks et les marges faibles.
+        - Donner une vision exploitable pour les equipes commerciales et logistiques.
+
+        **Sources de donnees**
+        - `erp.xlsx` : prix, stock, statut, prix d'achat.
+        - `liaison.xlsx` : table de correspondance ERP/Web.
+        - `web.xlsx` : informations catalogue du site.
+
+        **Preparation**
+        - Fusion ERP + liaison sur `product_id`.
+        - Fusion avec web sur `id_web` ↔ `sku`.
+        - Creation de `web_disponible` (1 si present sur le web, sinon 0).
+        - Nettoyage des colonnes numeriques et gestion des valeurs manquantes.
+
+        **Indicateurs calcules**
+        - CA par article = `price` x `stock_quantity`.
+        - Marge (%) = (prix HT - prix achat) / prix achat.
+        - Ruptures = `stock_quantity == 0`.
+
+        **Analyses**
+        - Top 10 CA et quantites.
+        - Pareto 20/80 sur le CA.
+        - Corrélations prix / achat / stock.
+
+        **Limites**
+        - Le CA est un potentiel (prix x stock), pas des ventes reelles.
+        - Les marges extremes peuvent venir de donnees d'achat manquantes.
+        """
+    )
+    st.stop()
 
 st.sidebar.header("🔍 Filtres Interactifs")
 
