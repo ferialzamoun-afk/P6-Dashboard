@@ -1,6 +1,6 @@
 """
 🏪 Dashboard Ventes & Stocks - Application Streamlit Interactive
-Conforme au brief : KPIs, Top 10 CA, Analyse stocks, Filtres & Bonus (Pareto, Corrélation)
+Conforme au brief : KPIs, Top 20 CA, Analyse stocks, Filtres & Bonus (Pareto, Corrélation)
 """
 
 import streamlit as st
