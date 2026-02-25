@@ -88,12 +88,12 @@ def load_data():
 
         # Nettoyer les colonnes numériques
         df_final['price'] = pd.to_numeric(df_final.get('price'), errors='coerce').fillna(0)
-        df_final['stock_quantity'] = pd.to_numeric(df_final.get('stock_quantity'), errors='coerce').fillna(0)
+        df_final['total_sales'] = pd.to_numeric(df_final.get('total_sales'), errors='coerce').fillna(0)
         df_final['purchase_price'] = pd.to_numeric(df_final.get('purchase_price'), errors='coerce').fillna(0)
         df_final['marge_brute'] = pd.to_numeric(df_final.get('marge_brute'), errors='coerce').fillna(0)
 
-        # Calculer CA = prix × stock (pour produits web uniquement)
-        df_final['ca_par_article'] = df_final['price'] * df_final['stock_quantity']
+        # Calculer CA = prix × total_sales (pour produits web uniquement)
+        df_final['ca_par_article'] = df_final['price'] * df_final['total_sales']
 
         # Calculer ou reutiliser la marge
         if 'taux_marge_pct' in df_final.columns:
@@ -291,6 +291,7 @@ if 'product_id_web' in df.columns:
         )
         df_filtered = df_filtered[df_filtered['product_id_web'].isin(categories_selectionnees)]
 
+
 # Filtre stock_status si disponible
 if 'stock_status' in df_filtered.columns:
     statuts_disponibles = df_filtered['stock_status'].dropna().unique().tolist()
@@ -301,6 +302,17 @@ if 'stock_status' in df_filtered.columns:
             default=statuts_disponibles
         )
         df_filtered = df_filtered[df_filtered['stock_status'].isin(statuts_selectionnes)]
+
+# Filtre product_type sous Statut Stock
+if 'product_type' in df_filtered.columns:
+    types_disponibles = df_filtered['product_type'].dropna().unique().tolist()
+    if types_disponibles:
+        types_selectionnes = st.sidebar.multiselect(
+            "Type de produit",
+            options=sorted(types_disponibles),
+            default=sorted(types_disponibles)
+        )
+        df_filtered = df_filtered[df_filtered['product_type'].isin(types_selectionnes)]
 
 # Filtre plage de prix
 if df_filtered['price'].max() > 0:
