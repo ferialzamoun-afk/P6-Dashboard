@@ -256,7 +256,7 @@ if page == "Methodologie":
         - Corrélations prix / achat / stock / prix ht/ taux_marge/ ca_par_article.
 
         **Limites**
-        - Le CA est un potentiel (prix x `total_sales`), pas des ventes reelles.
+        - Le CA est un potentiel (prix x `total_sales`).
         - Les marges extremes peuvent venir de donnees d'achat manquantes.
         """
     )
