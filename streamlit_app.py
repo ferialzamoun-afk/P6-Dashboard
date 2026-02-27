@@ -246,17 +246,17 @@ if page == "Methodologie":
         - Nettoyage des colonnes numeriques et gestion des valeurs manquantes.
 
         **Indicateurs calcules**
-        - CA par article = `price` x `stock_quantity`.
+        - CA par article = `price` x `total_sales`.
         - Marge (%) = (prix HT - prix achat) / prix achat.
         - Ruptures = `stock_quantity == 0`.
 
         **Analyses**
         - Top 10 CA et quantites.
         - Pareto 20/80 sur le CA.
-        - Corrélations prix / achat / stock.
+        - Corrélations prix / achat / stock / prix ht/ taux_marge/ ca_par_article.
 
         **Limites**
-        - Le CA est un potentiel (prix x stock), pas des ventes reelles.
+        - Le CA est un potentiel (prix x `total_sales`), pas des ventes reelles.
         - Les marges extremes peuvent venir de donnees d'achat manquantes.
         """
     )
@@ -366,7 +366,7 @@ with col1:
     st.metric(
         label="💰 CA Total Web",
         value=format_eur(ca_total, decimals=0),
-        help="Chiffre d'affaires potentiel (prix × stock) pour produits web"
+        help="Chiffre d'affaires potentiel (prix × total_sales) pour produits web"
     )
 
 # KPI 2 : Nombre de produits
@@ -535,7 +535,7 @@ if st.checkbox("📊 Afficher les données filtrées"):
     df_filtered['rupture_stock'] = (df_filtered['stock_quantity'] == 0).astype(int)
     
     cols_to_show = [
-        'product_id', 'product_id_web', 'sku', 'web_disponible',
+        'product_id', 'post_name', 'product_id_web', 'sku', 'web_disponible',
         'price', 'purchase_price', 'marge_brute', 'ca_par_article', 'taux_marge',
         'stock_quantity', 'rupture_stock', 'stock_status'
     ]
