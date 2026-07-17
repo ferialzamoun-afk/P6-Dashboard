@@ -176,6 +176,7 @@ def load_project_watch_markdown() -> Tuple[Optional[str], Optional[Path]]:
     """Load project watch markdown from known portfolio locations."""
     project_root = Path(__file__).resolve().parent
     candidates = [
+        project_root / 'docs' / 'VEILLE_METIER_TECHNOLOGIQUE_DASHBOARD.md',
         project_root.parent / 'MON-PORTFOLIO-DATA' / 'projets' / 'P13_portfolio' / 'Partie1-Amélioration_P6_IA' / '01_veille_metier_technologique.md',
         project_root.parent / 'P13' / 'Partie_1' / 'P6_ameliore_IA' / 'docs' / '02_veille_technologique_P13_partie_1.md',
     ]
