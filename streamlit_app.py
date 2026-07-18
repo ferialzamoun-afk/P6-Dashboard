@@ -22,6 +22,9 @@ from reportlab.lib.utils import ImageReader
 from reportlab.pdfgen import canvas
 
 
+APP_VERSION = "bc05-strict-2026-07-18-v2"
+
+
 def build_quality_reporting(df_source: pd.DataFrame):
     """Build quality reporting tables and optional Pandera validation results."""
     report = {}
@@ -300,7 +303,7 @@ def get_analysis_images():
 
 
 @st.cache_data
-def load_bc05_exports():
+def load_bc05_exports(app_version: str = APP_VERSION):
     """Charger les exports BC05 depuis le dashboard ou le dossier notebook P13."""
     project_root = Path(__file__).resolve().parent
     candidate_dirs = [
@@ -323,7 +326,7 @@ def load_bc05_exports():
 
 
 @st.cache_data
-def load_bc05_decision_matrix():
+def load_bc05_decision_matrix(app_version: str = APP_VERSION):
     """Load IA decision matrix generated in notebook 9.2bis if available."""
     project_root = Path(__file__).resolve().parent
     candidate_files = [
@@ -570,6 +573,7 @@ def build_pdf_report(kpis, image_items, sections):
 
 st.title("📊 Dashboard Ventes & Stocks")
 st.markdown("*Analyse des ventes et des stocks en temps reel*")
+st.caption(f"Version app: {APP_VERSION}")
 
 # Charger les données
 df = load_data()
