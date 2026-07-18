@@ -97,14 +97,14 @@ Bonne pratique:
 
 Seuils utilises:
 
-- `Critique`: score >= 0.65
-- `A surveiller`: 0.45 <= score < 0.65
-- `Normal`: score < 0.45
+- `Critique`: `critical_score >= 0.65` (IF + SHAP + impact business, sans kNN/K-Means)
+- `A surveiller`: `surveillance_score >= 0.45` (IF + kNN + K-Means + SHAP + impact business)
+- `Normal`: sous les seuils de surveillance et de critique
 
 Interpretation rapide:
 
 - `Critique`: action sous 24-48h.
-- `A surveiller`: controle hebdomadaire et suivi d'evolution.
+- `A surveiller`: controle hebdomadaire et suivi d'evolution, notamment pour les raretes kNN ou distances K-Means.
 - `Normal`: surveillance standard.
 
 ## Exports disponibles

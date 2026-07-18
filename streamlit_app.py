@@ -632,14 +632,15 @@ if page == "Methodologie":
 
         **Etape 2 - Detection IA multi-signaux**
         - Isolation Forest: atypie globale des produits.
-        - kNN: rarete locale dans le voisinage.
+        - kNN non supervise: rarete locale dans le voisinage, sans variable cible predite.
         - K-Means: distance au centroide et risque du cluster.
         - SHAP: explicabilite des facteurs dominants.
 
         **Etape 3 - Scoring decisionnel calibre**
-        - Score final = 0.30 IF + 0.20 kNN + 0.15 K-Means + 0.10 SHAP + 0.25 impact business.
-        - Seuils dynamiques calibres sur la distribution des scores.
-        - Seuils operationnels utilises: Critique >= 0.65, A surveiller >= 0.45.
+        - Score de surveillance = 0.30 IF + 0.20 kNN + 0.15 K-Means + 0.10 SHAP + 0.25 impact business.
+        - Score critique strict = IF + SHAP + impact business uniquement, renormalise sans kNN/K-Means.
+        - Seuils operationnels utilises dans l'export courant: Critique si `critical_score >= 0.65`, A surveiller si `surveillance_score >= 0.45`.
+        - Point de vigilance: kNN et K-Means renforcent la priorisation statistique, mais ne suffisent plus a declencher une urgence critique.
 
         **Etape 4 - Priorisation et passage a l'action**
         - Critique: action sous 24-48h.
@@ -845,7 +846,7 @@ if page == "Tableau de bord decisionnel":
     if bc05_decision_matrix is not None and not bc05_decision_matrix.empty:
         st.subheader("🚀 Amelioration IA")
         src_name = bc05_decision_path.name if bc05_decision_path else 'bc05_matrice_decisionnelle.csv'
-        st.caption(f"Matrice decisionnelle IF + SHAP + impact business chargee depuis: {src_name}")
+        st.caption(f"Matrice decisionnelle IF + kNN + K-Means + SHAP + impact business chargee depuis: {src_name}")
 
         matrix_df = bc05_decision_matrix.copy()
         
@@ -872,9 +873,15 @@ if page == "Tableau de bord decisionnel":
                 st.metric("Normal (IA)", int((matrix_df['priorite_decisionnelle'] == 'Normal').sum()))
 
             st.metric("Lignes matrice alignees", f"{len(matrix_df):,}")
+            st.caption(
+                "Lecture: les compteurs sont recalcules apres filtres utilisateur. "
+                "kNN est un score non supervise de rarete locale ; il augmente la priorisation statistique, "
+                "mais ne constitue pas une cible metier supervisee."
+            )
 
             strategic_cols = [
                 'product_id', 'priorite_decisionnelle', 'decision_score',
+                'critical_score', 'surveillance_score',
                 'shap_top_driver', 'lecture_strategique', 'ca_par_article', 'stock_quantity', 'taux_marge'
             ]
             strategic_cols = [c for c in strategic_cols if c in matrix_df.columns]
